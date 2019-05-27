@@ -1,0 +1,7 @@
+{%- set output = [] -%}
+{%- for object in objects['json']['saved_objects'] -%}
+    {%- set x = object.pop('updated_at', None) -%}
+    {%- set x = object.pop('version', None) -%}
+    {%- set x = output.append(object) -%}
+{%- endfor -%}
+{{ output }}

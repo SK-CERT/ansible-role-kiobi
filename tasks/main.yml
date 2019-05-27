@@ -1,0 +1,42 @@
+---
+
+- name: get saved objects from kibana
+  uri:
+    method: GET
+    url: "{{ source['kibana_host'] }}:{{ source['kibana_port'] }}/{{ source['kibana_path'] }}"
+    return_content: true
+    headers:
+      kbn-xsrf: true
+      Content-Type: 'application/json'
+    use_proxy: "{{ source['kibana_port'] in [80, 443] }}"
+  register: objects
+  changed_when: objects.status == 200
+  tags: get
+
+- name: normalize saved objects
+  set_fact:
+    saved_objects: "{{ lookup('template', 'saved_objects.j2') }}"
+  tags: get
+
+- name: save return objects to file
+  when:
+    - save_contents | bool
+  delegate_to: localhost
+  copy:
+    content: "{{ saved_objects }}"
+    dest: "{{ file }}"
+  tags: get
+
+- name: post saved objects to kibana
+  when:
+    - explicit_body is defined or saved_objects | length | bool
+  uri:
+    method: POST
+    url: "{{ target['kibana_host'] }}:{{ target['kibana_port'] }}/{{ target['kibana_path'] }}"
+    body: "{{ (explicit_body | default([]) + saved_objects | default([])) | to_json }}"
+    body_format: 'json'
+    headers:
+      kbn-xsrf: true
+      Content-Type: 'application/json'
+    use_proxy: "{{ target['kibana_port'] in [80, 443] }}"
+  tags: post
