@@ -1,3 +1,3 @@
 # Ansible role - Kiobi
 
-Retrieve or initialize Kibana objects.
+Move Kibana objects between two Kibana instances.
