@@ -32,11 +32,11 @@
     - explicit_body is defined or saved_objects | length | bool
   uri:
     method: POST
-    url: "{{ target['kibana_host'] }}:{{ target['kibana_port'] }}/{{ target['kibana_path'] }}"
+    url: "{{ destination['kibana_host'] }}:{{ destination['kibana_port'] }}/{{ destination['kibana_path'] }}"
     body: "{{ (explicit_body | default([]) + saved_objects | default([])) | to_json }}"
     body_format: 'json'
     headers:
       kbn-xsrf: true
       Content-Type: 'application/json'
-    use_proxy: "{{ target['kibana_port'] in [80, 443] }}"
+    use_proxy: "{{ destination['kibana_port'] in [80, 443] }}"
   tags: post
