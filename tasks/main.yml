@@ -3,12 +3,12 @@
 - name: get saved objects from kibana
   uri:
     method: GET
-    url: "{{ source['kibana_host'] }}:{{ source['kibana_port'] }}/{{ source['kibana_path'] }}"
+    url: "{{ source['host'] }}:{{ source['port'] }}/api/saved_objects/_find?{{ source['parameters'] }}"
     return_content: true
     headers:
       kbn-xsrf: true
       Content-Type: 'application/json'
-    use_proxy: "{{ source['kibana_port'] in [80, 443] }}"
+    use_proxy: "{{ source['port'] in [80, 443] }}"
   register: objects
   changed_when: objects.status == 200
   tags: get
@@ -32,11 +32,11 @@
     - explicit_body is defined or saved_objects | length | bool
   uri:
     method: POST
-    url: "{{ destination['kibana_host'] }}:{{ destination['kibana_port'] }}/{{ destination['kibana_path'] }}"
+    url: "{{ destination['host'] }}:{{ destination['port'] }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
     body: "{{ (explicit_body | default([]) + saved_objects | default([])) | to_json }}"
     body_format: 'json'
     headers:
       kbn-xsrf: true
       Content-Type: 'application/json'
-    use_proxy: "{{ destination['kibana_port'] in [80, 443] }}"
+    use_proxy: "{{ destination['port'] in [80, 443] }}"
   tags: post

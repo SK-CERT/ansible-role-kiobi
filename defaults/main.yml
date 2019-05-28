@@ -1,13 +1,13 @@
 ---
 
 source:
-  kibana_host: "http://localhost"
-  kibana_port: 5601
-  kibana_path: "api/saved_objects/_find?type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1"
+  host: "http://localhost"
+  port: 5601
+  parameters: "type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1"
 
 destination:
-  kibana_host: "http://localhost"
-  kibana_port: 5601
-  kibana_path: "api/saved_objects/_bulk_create"
+  host: "http://localhost"
+  port: 5601
+  parameters: "overwrite=false"
 
 save_contents: false
