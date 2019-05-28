@@ -1,13 +1,7 @@
 ---
 
 source:
-  host: "http://localhost"
-  port: 5601
   parameters: "type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1"
 
 destination:
-  host: "http://localhost"
-  port: 5601
   parameters: "overwrite=false"
-
-save_contents: false

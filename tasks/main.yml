@@ -1,6 +1,9 @@
 ---
 
 - name: get saved objects from kibana
+  when:
+    - source['host'] is defined
+    - source['port'] is defined
   uri:
     method: GET
     url: "{{ source['host'] }}:{{ source['port'] }}/api/saved_objects/_find?{{ source['parameters'] }}"
@@ -14,29 +17,42 @@
   tags: get
 
 - name: normalize saved objects
+  when:
+    - objects.changed
   set_fact:
-    saved_objects: "{{ lookup('template', 'saved_objects.j2') }}"
+    saved_objects: "{{ lookup('template', 'normalize_saved_objects.j2') }}"
   tags: get
 
 - name: save return objects to file
   when:
-    - save_contents | bool
-  delegate_to: localhost
+    - destination['file'] is defined
+    - saved_objects is defined
   copy:
     content: "{{ saved_objects }}"
-    dest: "{{ file }}"
+    dest: "{{ destination['file'] }}"
   tags: get
+
+- name: read file contents
+  when:
+    - source['file'] is defined
+  set_fact:
+    file_contents: "{{ lookup('file', source['file']) }}"
+  tags: post
 
 - name: post saved objects to kibana
   when:
-    - explicit_body is defined or saved_objects | length | bool
+    - destination['host'] is defined
+    - destination['port'] is defined
   uri:
     method: POST
     url: "{{ destination['host'] }}:{{ destination['port'] }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
-    body: "{{ (explicit_body | default([]) + saved_objects | default([])) | to_json }}"
+    body: "{{ (source['objects'] | default([]) + saved_objects | default([]) + file_contents | default([])) | to_json }}"
     body_format: 'json'
     headers:
       kbn-xsrf: true
       Content-Type: 'application/json'
     use_proxy: "{{ destination['port'] in [80, 443] }}"
+  register: response
+  changed_when: response.status == 200
   tags: post
+
