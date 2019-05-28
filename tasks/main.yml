@@ -1,12 +1,24 @@
 ---
 
-- name: get saved objects from kibana
+- name: check source hostname prefix
   when:
     - source['host'] is defined
+  set_fact:
+    source_host: "{{ source['host'] if (source['host'].startswith('http://') or source['host'].startswith('https://')) else (source['host'] | regex_replace('^(.*)$', 'http://\\1')) }}"
+
+- name: check destination hostname prefix
+  when:
+    - destination['host'] is defined
+  set_fact:
+    dest_host: "{{ destination['host'] if (destination['host'].startswith('http://') or destination['host'].startswith('https://')) else (destination['host'] | regex_replace('^(.*)$', 'http://\\1')) }}"
+
+- name: get saved objects from kibana
+  when:
+    - source_host is defined
     - source['port'] is defined
   uri:
     method: GET
-    url: "{{ source['host'] }}:{{ source['port'] }}/api/saved_objects/_find?{{ source['parameters'] }}"
+    url: "{{ source_host }}:{{ source['port'] }}/api/saved_objects/_find?{{ source['parameters'] }}"
     return_content: true
     headers:
       kbn-xsrf: true
@@ -23,7 +35,7 @@
     saved_objects: "{{ lookup('template', 'normalize_saved_objects.j2') }}"
   tags: get
 
-- name: save return objects to file
+- name: save return objects to file "{{ destination['file'] }}"
   when:
     - destination['file'] is defined
     - saved_objects is defined
@@ -41,11 +53,11 @@
 
 - name: post saved objects to kibana
   when:
-    - destination['host'] is defined
+    - dest_host is defined
     - destination['port'] is defined
   uri:
     method: POST
-    url: "{{ destination['host'] }}:{{ destination['port'] }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
+    url: "{{ dest_host }}:{{ destination['port'] }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
     body: "{{ (source['objects'] | default([]) + saved_objects | default([]) + file_contents | default([])) | to_json }}"
     body_format: 'json'
     headers:
