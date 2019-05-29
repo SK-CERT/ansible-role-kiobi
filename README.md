@@ -44,11 +44,11 @@ Playbook for migrating Kibana objects:
         - role: kiobi
           vars:
             source:
-              host: "http://localhost"
+              host: "localhost"
               port: 5601
               parameters: "type=search&type=index-pattern&per_page=10&page=1"
             destination:
-              host: "http://localhost"
+              host: "localhost"
               port: 5602
               parameters: "overwrite=true"
 
@@ -66,7 +66,7 @@ Playbook for restoring Kibana objects:
                   attributes:
                     title: "test-*"
             destination:
-              host: "http://localhost"
+              host: "localhost"
               port: 5601
 
 Playbook for backuping Kibana objects:
@@ -76,7 +76,7 @@ Playbook for backuping Kibana objects:
         - role: kiobi
           vars:
             source:
-              host: "http://localhost"
+              host: "localhost"
               port: 5601
             destination:
               file: "/tmp/test_output.json"
