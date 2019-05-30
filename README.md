@@ -18,13 +18,13 @@ Role Variables
 
     source:
         host: <str, hostname>
-        parameters: <str, url query parameters based on `https://www.elastic.co/guide/en/kibana/current/saved-objects-api-find.html`>
+        parameters: <str, url query parameters based on `https://www.elastic.co/guide/en/kibana/current/saved-objects-api-find.html`, default is "type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1">
         objects: <list of additional Kibana objects>
         file: <str, path to file>
 
     destination:
         host: <str, hostname>
-        parameters: <str, url query parameters based on `https://www.elastic.co/guide/en/kibana/current/saved-objects-api-bulk-create.html`>
+        parameters: <str, url query parameters based on `https://www.elastic.co/guide/en/kibana/current/saved-objects-api-bulk-create.html`, default is "overwrite=false">
         file: <str, path to file>
 
 Dependencies

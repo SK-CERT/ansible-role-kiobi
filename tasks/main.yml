@@ -33,7 +33,7 @@
     saved_objects: "{{ lookup('template', 'normalize_saved_objects.j2') }}"
   tags: get
 
-- name: save return objects to file "{{ destination['file'] }}"
+- name: save return objects to file
   when:
     - destination['file'] is defined
     - saved_objects is defined
