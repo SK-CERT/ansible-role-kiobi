@@ -15,15 +15,13 @@
 - name: get saved objects from kibana
   when:
     - source_host is defined
-    - source['port'] is defined
   uri:
     method: GET
-    url: "{{ source_host }}:{{ source['port'] }}/api/saved_objects/_find?{{ source['parameters'] }}"
+    url: "{{ source_host }}/api/saved_objects/_find?{{ source['parameters'] }}"
     return_content: true
     headers:
       kbn-xsrf: true
       Content-Type: 'application/json'
-    use_proxy: "{{ source['port'] in [80, 443] }}"
   register: objects
   changed_when: objects.status == 200
   tags: get
@@ -54,16 +52,14 @@
 - name: post saved objects to kibana
   when:
     - dest_host is defined
-    - destination['port'] is defined
   uri:
     method: POST
-    url: "{{ dest_host }}:{{ destination['port'] }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
+    url: "{{ dest_host }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
     body: "{{ (source['objects'] | default([]) + saved_objects | default([]) + file_contents | default([])) | to_json }}"
     body_format: 'json'
     headers:
       kbn-xsrf: true
       Content-Type: 'application/json'
-    use_proxy: "{{ destination['port'] in [80, 443] }}"
   register: response
   changed_when: response.status == 200
   tags: post
