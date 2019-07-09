@@ -4,13 +4,17 @@
   when:
     - source['host'] is defined
   set_fact:
-    source_host: "{{ source['host'] if (source['host'].startswith('http://') or source['host'].startswith('https://')) else (source['host'] | regex_replace('^(.*)$', 'http://\\1')) }}"
+    source_host: >-
+      {{  (source['host'].startswith('http://') or source['host'].startswith('https://'))
+      | ternary (source['host'], source['host'] | regex_replace('^(.*)$', 'http://\\1')) }}
 
 - name: check destination hostname prefix
   when:
     - destination['host'] is defined
   set_fact:
-    dest_host: "{{ destination['host'] if (destination['host'].startswith('http://') or destination['host'].startswith('https://')) else (destination['host'] | regex_replace('^(.*)$', 'http://\\1')) }}"
+    dest_host: >-
+      {{  (destination['host'].startswith('http://') or destination['host'].startswith('https://'))
+      | ternary (destination['host'], (destination['host'] | regex_replace('^(.*)$', 'http://\\1')) }}
 
 - name: get saved objects from kibana
   when:
@@ -24,22 +28,7 @@
       Content-Type: 'application/json'
   register: objects
   changed_when: objects.status == 200
-  tags: get
-
-- name: normalize saved objects
-  when:
-    - objects.changed
-  set_fact:
-    saved_objects: "{{ lookup('template', 'normalize_saved_objects.j2') }}"
-  tags: get
-
-- name: save return objects to file
-  when:
-    - destination['file'] is defined
-    - saved_objects is defined
-  copy:
-    content: "{{ saved_objects }}"
-    dest: "{{ destination['file'] }}"
+  notify: save return objects to file
   tags: get
 
 - name: read file contents
@@ -55,7 +44,10 @@
   uri:
     method: POST
     url: "{{ dest_host }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
-    body: "{{ (source['objects'] | default([]) + saved_objects | default([]) + file_contents | default([])) | to_json }}"
+    body: "{{ (source['objects'] | default([]) +
+      {{ lookup('template', 'normalize_saved_objects.j2') }} | default([]) +
+      file_contents | default([]))
+      | to_json }}"
     body_format: 'json'
     headers:
       kbn-xsrf: true
@@ -63,4 +55,3 @@
   register: response
   changed_when: response.status == 200
   tags: post
-
