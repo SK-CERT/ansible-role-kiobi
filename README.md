@@ -1,7 +1,7 @@
 Kiobi
 =========
 
-Abstraction for Kibana REST API `saved_objects/_find` for retrieving objects and `saved_objects/_bulk_create` for storing objects. 
+Abstraction for Kibana REST API `saved_objects/_find` for retrieving objects and `saved_objects/_bulk_create` for storing objects.
 
 Possible use cases:
 - Migrate Kibana objects between two Kibana instances.
