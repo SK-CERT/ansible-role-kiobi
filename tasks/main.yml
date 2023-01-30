@@ -2,26 +2,26 @@
 
 - name: check source hostname prefix
   when:
-    - source['host'] is defined
+    - source_host is defined
   set_fact:
-    source_host: >-
-      {{  (source['host'].startswith('http://') or source['host'].startswith('https://'))
-      | ternary (source['host'], source['host'] | regex_replace('^(.*)$', 'http://\\1')) }}
+    __source_host: >-
+      {{  (source_host.startswith('http://') or source_host.startswith('https://'))
+      | ternary (source_host, source_host | regex_replace('^(.*)$', 'http://\\1')) }}
 
 - name: check destination hostname prefix
   when:
-    - destination['host'] is defined
+    - destination_host is defined
   set_fact:
-    dest_host: >-
-      {{  (destination['host'].startswith('http://') or destination['host'].startswith('https://'))
-      | ternary (destination['host'], (destination['host'] | regex_replace('^(.*)$', 'http://\\1'))) }}
+    __dest_host: >-
+      {{  (destination_host.startswith('http://') or destination_host.startswith('https://'))
+      | ternary (destination_host, (destination_host | regex_replace('^(.*)$', 'http://\\1'))) }}
 
 - name: get saved objects from kibana
   when:
-    - source_host is defined
+    - __source_host is defined
   uri:
     method: GET
-    url: "{{ source_host }}/api/saved_objects/_find?{{ source['parameters'] }}"
+    url: "{{ __source_host }}/api/saved_objects/_find?{{ source_parameters }}"
     return_content: true
     validate_certs: "{{ validate_certs }}"
     headers:
@@ -34,18 +34,18 @@
 
 - name: read file contents
   when:
-    - source['file'] is defined
+    - source_file is defined
   set_fact:
-    file_contents: "{{ lookup('file', source['file']) | from_json }}"
+    file_contents: "{{ lookup('file', source_file) | from_json }}"
   tags: post
 
 - name: post saved objects to kibana
   when:
-    - dest_host is defined
+    - __dest_host is defined
   uri:
     method: POST
-    url: "{{ dest_host }}/api/saved_objects/_bulk_create?{{ destination['parameters'] }}"
-    body: "{{ (source.get('objects', []) + lookup('template', 'normalize_saved_objects.j2') + (file_contents | default([]))) | to_json }}"
+    url: "{{ __dest_host }}/api/saved_objects/_bulk_create?{{ destination_parameters }}"
+    body: "{{ ((source_objects | default([])) + lookup('template', 'normalize_saved_objects.j2') + (file_contents | default([]))) | to_json }}"
     body_format: 'json'
     validate_certs: "{{ validate_certs }}"
     headers:

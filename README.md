@@ -1,5 +1,4 @@
-Kiobi
-=========
+# Kiobi
 
 Abstraction for Kibana REST API `saved_objects/_find` for retrieving objects and `saved_objects/_bulk_create` for storing objects.
 
@@ -8,79 +7,67 @@ Possible use cases:
 - Backup Kibana objects to a file.
 - Restore Kibana objects from file.
 
-Requirements
-------------
+## Requirements
 
 None
 
-Role Variables
---------------
+## Role Variables
 
-    source:
-        host: <str, hostname>
-        parameters: <str, url query parameters based on `https://www.elastic.co/guide/en/kibana/current/saved-objects-api-find.html`, default is "type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1">
-        objects: <list of additional Kibana objects>
-        file: <str, path to file>
+`source_host` - source kibana host
+`source_parameters` - [url query parameters](https://www.elastic.co/guide/en/kibana/current/saved-objects-api-find.html), default is `type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1`
+`source_objects` - list of additional Kibana objects
+`source_file` - path to source file
+`destination_host` - destination kibana hostname
+`destination_parameters` - [url query parameters](https://www.elastic.co/guide/en/kibana/current/saved-objects-api-bulk-create.html), default is `overwrite=false`
+`destination_file` - path to destination file
 
-    destination:
-        host: <str, hostname>
-        parameters: <str, url query parameters based on `https://www.elastic.co/guide/en/kibana/current/saved-objects-api-bulk-create.html`, default is "overwrite=false">
-        file: <str, path to file>
-
-Dependencies
-------------
+## Dependencies
 
 None
 
-Example Playbooks
-----------------
+## Example Playbooks
 
-Playbook for migrating Kibana objects:
+- Playbook for migrating Kibana objects:
+```
+- hosts: localhost
+  roles:
+    - role: kiobi
+      vars:
+        source_host: "localhost:5601"
+        source_parameters: "type=search&type=index-pattern&per_page=10&page=1"
+        destination_host: "localhost:5602"
+        destination_parameters: "overwrite=true"
+```
 
-    - hosts: localhost
-      roles:
-        - role: kiobi
-          vars:
-            source:
-              host: "localhost:5601"
-              parameters: "type=search&type=index-pattern&per_page=10&page=1"
-            destination:
-              host: "localhost:5602"
-              parameters: "overwrite=true"
+- Playbook for restoring Kibana objects:
+```
+- hosts: localhost
+  roles:
+    - role: kiobi
+      vars:
+        source_file: "/tmp/saved_objects.json"
+        source_objects:
+          - id: "43s5rcv7b8yb72g83b8fy"
+            type: "index-pattern"
+            attributes:
+              title: "test-*"
+        destination_host: "localhost:5601"
+```
 
-Playbook for restoring Kibana objects:
+- Playbook for backuping Kibana objects:
+```
+- hosts: localhost
+  roles:
+    - role: kiobi
+      vars:
+        source_host: "localhost:5601"
+        destination_file: "/tmp/test_output.json"
+```
 
-    - hosts: localhost
-      roles:
-        - role: kiobi
-          vars:
-            source:
-              file: "/tmp/saved_objects.json"
-              objects:
-                - id: "43s5rcv7b8yb72g83b8fy"
-                  type: "index-pattern"
-                  attributes:
-                    title: "test-*"
-            destination:
-              host: "localhost:5601"
-
-Playbook for backuping Kibana objects:
-
-    - hosts: localhost
-      roles:
-        - role: kiobi
-          vars:
-            source:
-              host: "localhost:5601"
-            destination:
-              file: "/tmp/test_output.json"
-
-License
--------
+## License
 
 MIT
 
-Author Information
-------------------
+## Author Information
 
 Tomas Bellus

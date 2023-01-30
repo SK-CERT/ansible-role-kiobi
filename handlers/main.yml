@@ -1,7 +1,7 @@
 ---
 
 - name: save return objects to file
-  when: destination['file'] is defined
+  when: destination_file is defined
   copy:
     content: "{{ lookup('template', 'normalize_saved_objects.j2') }}"
-    dest: "{{ destination['file'] }}"
+    dest: "{{ destination_file }}"

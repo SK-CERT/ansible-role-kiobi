@@ -2,8 +2,5 @@
 
 validate_certs: true
 
-source:
-  parameters: "type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1"
-
-destination:
-  parameters: "overwrite=false"
+source_parameters: "type=visualization&type=search&type=index-pattern&type=dashboard&per_page=100&page=1"
+destination_parameters: "overwrite=false"
